@@ -33,7 +33,9 @@ cloudinary.config({
   api_secret: process.env.CLOUD_API_SECRET,
 });
 
-export const stripe = new Stripe(stripeSecretKey);
+export const stripe = new Stripe(stripeSecretKey, {
+  apiVersion: "2026-05-27.dahlia",
+});
 export const myCache = new NodeCache();
 const app = express();
 
@@ -55,10 +57,6 @@ app.get("/", (req, res) => {
   res.send("API working with /api/v1");
 });
 
-app.get("/:universalURL", (req, res) => {
-  res.send("404 URL NOT FOUND");
-});
-
 //using routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/product", productRoute);
@@ -67,6 +65,12 @@ app.use("/api/v1/payment", paymentRoute);
 app.use("/api/v1/dashboard", dashboardRoute);
 
 app.use("/uploads", express.static("uploads"));
+
+// 404 fallback for any unmatched route (Express 5: use a path-less middleware)
+app.use((req, res) => {
+  res.status(404).send("404 URL NOT FOUND");
+});
+
 app.use(errorMiddleware);
 
 app.listen(port, () => {

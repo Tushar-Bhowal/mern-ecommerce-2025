@@ -265,9 +265,9 @@ export const getProductsFilter = TryCatch(async (req, res, next) => {
   }
 
   // Construct base query
-  const baseQuery: BaseQuery = {
-    [filterType]: filterValue.toLowerCase(),
-  };
+  const baseQuery: BaseQuery = gender
+    ? { gender: filterValue.toLowerCase() as "male" | "female" }
+    : { category: filterValue.toLowerCase() };
 
   const productsPromise = Product.find(baseQuery).limit(limit).skip(skip);
 

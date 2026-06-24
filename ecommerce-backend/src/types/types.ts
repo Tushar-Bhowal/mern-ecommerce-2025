@@ -6,7 +6,7 @@ export interface NewUserRequestBody {
   email: string;
   password: string;
   photo: string;
-  gender: string;
+  gender: "male" | "female";
   _id: string;
   dob: Date;
 }
@@ -14,7 +14,7 @@ export interface NewUserRequestBody {
 export interface NewProductRequestBody {
   name: string;
   category: string;
-  gender: string;
+  gender: "male" | "female";
   price: number;
   stock: number;
 }
@@ -39,7 +39,7 @@ export interface BaseQuery {
   };
   price?: { $lte: number };
   category?: string;
-  gender?: string;
+  gender?: "male" | "female";
 }
 export type InvalidateCacheProps = {
   product?: boolean;
