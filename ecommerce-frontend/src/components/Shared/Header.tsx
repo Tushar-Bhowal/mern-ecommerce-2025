@@ -43,7 +43,7 @@ const Header = ({ user }: PropsType) => {
       dispatch(userNotExist());
       toast.success("Sign Out Successfully");
       window.location.reload();
-    } catch (error) {
+    } catch {
       toast.error("Sign Out Failed");
     }
   };

@@ -3,42 +3,32 @@ import {
   AiOutlineSortDescending,
 } from "react-icons/ai";
 import {
-  Column,
-  usePagination,
-  useSortBy,
-  useTable,
-  TableOptions,
-} from "react-table";
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 
 function TableHOC<T extends object>(
-  columns: Column<T>[],
+  columns: ColumnDef<T>[],
   data: T[],
   containerClassname: string,
   heading: string,
   showPagination: boolean = false
 ) {
   return function HOC() {
-    const options: TableOptions<T> = {
-      columns,
+    const table = useReactTable({
       data,
+      columns,
+      getCoreRowModel: getCoreRowModel(),
+      getSortedRowModel: getSortedRowModel(),
+      getPaginationRowModel: getPaginationRowModel(),
       initialState: {
-        pageSize: 6,
+        pagination: { pageSize: 6 },
       },
-    };
-
-    const {
-      getTableProps,
-      getTableBodyProps,
-      headerGroups,
-      page,
-      prepareRow,
-      nextPage,
-      pageCount,
-      state: { pageIndex },
-      previousPage,
-      canNextPage,
-      canPreviousPage,
-    } = useTable(options, useSortBy, usePagination);
+    });
 
     return (
       <div className={containerClassname}>
@@ -46,58 +36,64 @@ function TableHOC<T extends object>(
           {heading}
         </h2>
 
-        <table
-          className="table w-full text-sm text-left rtl:text-right text-gray-500"
-          {...getTableProps()}
-        >
+        <table className="table w-full text-sm text-left rtl:text-right text-gray-500">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-            {headerGroups.map((headerGroup) => (
-              <tr {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => (
-                  <th
-                    className="px-6 py-3"
-                    {...column.getHeaderProps(column.getSortByToggleProps())}
-                  >
-                    {column.render("Header")}
-                    {column.isSorted && (
-                      <span>
-                        {" "}
-                        {column.isSortedDesc ? (
-                          <AiOutlineSortDescending />
-                        ) : (
-                          <AiOutlineSortAscending />
-                        )}
-                      </span>
-                    )}
-                  </th>
-                ))}
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  const sorted = header.column.getIsSorted();
+                  return (
+                    <th
+                      key={header.id}
+                      className="px-6 py-3 cursor-pointer"
+                      onClick={header.column.getToggleSortingHandler()}
+                    >
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                      {sorted && (
+                        <span>
+                          {" "}
+                          {sorted === "desc" ? (
+                            <AiOutlineSortDescending />
+                          ) : (
+                            <AiOutlineSortAscending />
+                          )}
+                        </span>
+                      )}
+                    </th>
+                  );
+                })}
               </tr>
             ))}
           </thead>
-          <tbody {...getTableBodyProps()}>
-            {page.map((row) => {
-              prepareRow(row);
-
-              return (
-                <tr {...row.getRowProps()} className="bg-white border-b">
-                  {row.cells.map((cell) => (
-                    <td className="px-6 py-4" {...cell.getCellProps()}>
-                      {cell.render("Cell")}
-                    </td>
-                  ))}
-                </tr>
-              );
-            })}
+          <tbody>
+            {table.getRowModel().rows.map((row) => (
+              <tr key={row.id} className="bg-white border-b">
+                {row.getVisibleCells().map((cell) => (
+                  <td key={cell.id} className="px-6 py-4">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
           </tbody>
         </table>
 
         {showPagination && (
           <div className="table-pagination">
-            <button disabled={!canPreviousPage} onClick={previousPage}>
+            <button
+              disabled={!table.getCanPreviousPage()}
+              onClick={() => table.previousPage()}
+            >
               Prev
             </button>
-            <span>{`${pageIndex + 1} of ${pageCount}`}</span>
-            <button disabled={!canNextPage} onClick={nextPage}>
+            <span>{`${table.getState().pagination.pageIndex + 1} of ${table.getPageCount()}`}</span>
+            <button
+              disabled={!table.getCanNextPage()}
+              onClick={() => table.nextPage()}
+            >
               Next
             </button>
           </div>

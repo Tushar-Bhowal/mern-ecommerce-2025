@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 const Stopwatch: React.FC = () => {
   const [time, setTime] = useState<number>(0);
   const [isRunning, setIsRunning] = useState<boolean>(false);
-  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+  const [intervalId, setIntervalId] = useState<ReturnType<
+    typeof setInterval
+  > | null>(null);
 
   useEffect(() => {
     return () => {

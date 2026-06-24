@@ -3,7 +3,7 @@ import AdminSidebar from "../../components/Shared/admin/AdminSidebar";
 import { ReactElement, useEffect, useState } from "react";
 
 import TableHOC from "../../components/Shared/admin/TableHOC";
-import { Column } from "react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { Link } from "react-router-dom";
 import { FaPlus } from "react-icons/fa";
 import { useAllProductsQuery } from "@/redux/api/productApi";
@@ -22,26 +22,26 @@ interface DataType {
   action: ReactElement;
 }
 
-const columns: Column<DataType>[] = [
+const columns: ColumnDef<DataType>[] = [
   {
-    Header: "Photo",
-    accessor: "photo",
+    header: "Photo",
+    accessorKey: "photo",
   },
   {
-    Header: "Name",
-    accessor: "name",
+    header: "Name",
+    accessorKey: "name",
   },
   {
-    Header: "Price",
-    accessor: "price",
+    header: "Price",
+    accessorKey: "price",
   },
   {
-    Header: "Stock",
-    accessor: "stock",
+    header: "Stock",
+    accessorKey: "stock",
   },
   {
-    Header: "Action",
-    accessor: "action",
+    header: "Action",
+    accessorKey: "action",
   },
 ];
 

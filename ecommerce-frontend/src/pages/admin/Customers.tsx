@@ -1,7 +1,7 @@
 import AdminSidebar from "../../components/Shared/admin/AdminSidebar";
 import TableHOC from "../../components/Shared/admin/TableHOC";
 import { FaTrash } from "react-icons/fa";
-import { Column } from "react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { useState, useEffect } from "react";
 import { ReactElement } from "react";
 import { RootState } from "@/redux/store";
@@ -21,30 +21,30 @@ interface DataType {
   action: ReactElement;
 }
 
-const columns: Column<DataType>[] = [
+const columns: ColumnDef<DataType>[] = [
   {
-    Header: "Avatar",
-    accessor: "avatar",
+    header: "Avatar",
+    accessorKey: "avatar",
   },
   {
-    Header: "Name",
-    accessor: "name",
+    header: "Name",
+    accessorKey: "name",
   },
   {
-    Header: "Gender",
-    accessor: "gender",
+    header: "Gender",
+    accessorKey: "gender",
   },
   {
-    Header: "Email",
-    accessor: "email",
+    header: "Email",
+    accessorKey: "email",
   },
   {
-    Header: "Role",
-    accessor: "role",
+    header: "Role",
+    accessorKey: "role",
   },
   {
-    Header: "Action",
-    accessor: "action",
+    header: "Action",
+    accessorKey: "action",
   },
 ];
 

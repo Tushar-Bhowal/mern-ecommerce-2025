@@ -1,4 +1,4 @@
-import { Column } from "react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import TableHOC from "./TableHOC";
 
 interface DataType {
@@ -9,26 +9,26 @@ interface DataType {
   status: string;
 }
 
-const columns: Column<DataType>[] = [
+const columns: ColumnDef<DataType>[] = [
   {
-    Header: "Id",
-    accessor: "_id",
+    header: "Id",
+    accessorKey: "_id",
   },
   {
-    Header: "Quantity",
-    accessor: "quantity",
+    header: "Quantity",
+    accessorKey: "quantity",
   },
   {
-    Header: "Discount",
-    accessor: "discount",
+    header: "Discount",
+    accessorKey: "discount",
   },
   {
-    Header: "Amount",
-    accessor: "amount",
+    header: "Amount",
+    accessorKey: "amount",
   },
   {
-    Header: "Status",
-    accessor: "status",
+    header: "Status",
+    accessorKey: "status",
   },
 ];
 

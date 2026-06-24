@@ -95,7 +95,7 @@ export const DirectionAwareHover = ({
             className="h-full w-full relative bg-gray-100"
             transition={{
               duration: 0.2,
-              ease: "easeOut",
+              ease: "easeOut" as const,
             }}
           >
             <img

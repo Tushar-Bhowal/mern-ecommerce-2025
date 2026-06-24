@@ -20,18 +20,10 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
-  
-        // ...
-        "baseUrl": ".",
-        "paths": {
-          "@/*": [
-            "./src/*"
-          ]
-        }
-        // ...
-
-    
-
+    /* Path aliases (TS 6: resolved relative to this tsconfig, no baseUrl needed) */
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

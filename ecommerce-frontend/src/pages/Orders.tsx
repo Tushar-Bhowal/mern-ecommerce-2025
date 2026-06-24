@@ -1,7 +1,7 @@
 import { ReactElement, useEffect, useState } from "react";
 
 import { Link } from "react-router-dom";
-import { Column } from "react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import TableHOC from "../components/Shared/admin/TableHOC";
 import Breadcrumb from "@/components/Shared/Breadcrumb";
 import { useSelector } from "react-redux";
@@ -20,30 +20,30 @@ type DataType = {
   action: ReactElement;
 };
 
-const column: Column<DataType>[] = [
+const column: ColumnDef<DataType>[] = [
   {
-    Header: "ID",
-    accessor: "_id",
+    header: "ID",
+    accessorKey: "_id",
   },
   {
-    Header: "Quantity",
-    accessor: "quantity",
+    header: "Quantity",
+    accessorKey: "quantity",
   },
   {
-    Header: "Discount",
-    accessor: "discount",
+    header: "Discount",
+    accessorKey: "discount",
   },
   {
-    Header: "Amount",
-    accessor: "amount",
+    header: "Amount",
+    accessorKey: "amount",
   },
   {
-    Header: "Status",
-    accessor: "status",
+    header: "Status",
+    accessorKey: "status",
   },
   {
-    Header: "Action",
-    accessor: "action",
+    header: "Action",
+    accessorKey: "action",
   },
 ];
 

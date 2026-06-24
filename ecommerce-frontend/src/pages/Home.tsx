@@ -12,6 +12,7 @@ import { ProductSkeleton } from "@/components/Shared/Loader";
 import { CartItem } from "@/types/types";
 import { addToCart } from "@/redux/reducer/cartReducer";
 import { useDispatch } from "react-redux";
+import { useEffect } from "react";
 
 const Home = () => {
   const { data, isError, isLoading } = useLatestProductsQuery("");
@@ -25,7 +26,10 @@ const Home = () => {
     toast.success("Added to cart");
   };
 
-  if (isError) toast.error("Cannot Fetch the Products");
+  useEffect(() => {
+    if (isError) toast.error("Cannot Fetch the Products");
+  }, [isError]);
+
   return (
     <div>
       <section className="relative w-full h-screen overflow-hidden">
