@@ -1,0 +1,10 @@
+# Editor / IDE
+.vscode/
+.idea/
+
+# Claude Code context files (kept local, not committed)
+CLAUDE.md
+
+# OS files
+.DS_Store
+*.log
