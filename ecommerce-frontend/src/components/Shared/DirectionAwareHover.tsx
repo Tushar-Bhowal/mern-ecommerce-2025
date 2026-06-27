@@ -89,7 +89,7 @@ export const DirectionAwareHover = ({
           whileHover={direction}
           exit="exit"
         >
-          <motion.div className="absolute inset-0 w-full h-full hover:bg-black-full hover:bg-opacity-20 z-10 transition duration-500" />
+          <motion.div className="absolute inset-0 w-full h-full hover:bg-black-full/20 z-10 transition duration-500" />
           <motion.div
             variants={variants}
             className="h-full w-full relative bg-gray-100"
