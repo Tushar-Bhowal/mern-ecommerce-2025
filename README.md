@@ -12,6 +12,8 @@
 
 A full-stack online store with a customer storefront and an admin dashboard. The repository is split into two independently installed/run TypeScript packages — an Express REST API and a React SPA — that communicate only over HTTP through `VITE_SERVER` + `/api/v1/<domain>/`.
 
+![NexCartia login page](ecommerce-frontend/public/login-preview.png)
+
 ## Overview
 
 The **backend** (`ecommerce-backend/`) is a stateless Express 5 REST API persisting to MongoDB via Mongoose. It exposes five domains — `user`, `product`, `order`, `payment`, `dashboard` — each as a router under `/api/v1`. Read-heavy endpoints are cached in an in-process `node-cache` instance (`myCache`), and every mutation invalidates the affected cache keys so reads never serve stale data. Product images are uploaded through Multer (in-memory) and pushed to Cloudinary; checkout amounts are computed server-side and turned into Stripe PaymentIntents.
