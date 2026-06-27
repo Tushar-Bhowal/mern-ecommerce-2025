@@ -2,10 +2,13 @@ import { useLocation } from "react-router-dom";
 
 const NewsLetter = () => {
   const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith("/admin");
+  // Hidden on admin and the auth page (login is a self-contained, full-height screen).
+  const isHidden =
+    location.pathname.startsWith("/admin") ||
+    location.pathname === "/login";
   return (
     <>
-      {!isAdminRoute && (
+      {!isHidden && (
         <section className="mt-20">
           <div className="bg-green-150 p-6 md:p-12 ">
             <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row items-center justify-between">

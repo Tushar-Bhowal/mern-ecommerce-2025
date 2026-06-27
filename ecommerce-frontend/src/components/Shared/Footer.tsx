@@ -3,10 +3,13 @@ import { Link, useLocation } from "react-router-dom";
 import { FaFacebook, FaDiscord, FaTwitter, FaGithub } from "react-icons/fa";
 const Footer = () => {
   const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith("/admin");
+  // Hidden on admin and the auth page (login is a self-contained, full-height screen).
+  const isHidden =
+    location.pathname.startsWith("/admin") ||
+    location.pathname === "/login";
   return (
     <>
-      {!isAdminRoute && (
+      {!isHidden && (
         <section className="bg-black-150">
           <footer className="max-w-7xl mx-auto w-full px-3 py-12 sm:p-12 xl:px-0 xl:py-12 ">
             <div className="container mx-auto px-2">

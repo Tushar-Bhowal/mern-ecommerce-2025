@@ -1,13 +1,10 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { BsGenderAmbiguous } from "react-icons/bs";
 import { FaGoogle } from "react-icons/fa";
-import { CiCalendarDate } from "react-icons/ci";
 import {
-  HiOutlineUser,
-  HiOutlineMail,
-  HiOutlineLockClosed,
+  HiArrowLeft,
+  HiOutlineEye,
+  HiOutlineEyeOff,
 } from "react-icons/hi";
 import { v4 as uuidv4 } from "uuid";
 import loginImage from "../assets/login.jpg";
@@ -37,10 +34,64 @@ const initialFormData: FormData = {
   password: "",
 };
 
+const fieldClass = (invalid: boolean) =>
+  `peer block w-full rounded-lg border bg-white px-3 pb-2.5 pt-4 text-sm text-gray-900 shadow-sm transition-colors focus:outline-none focus:ring-2 ${
+    invalid
+      ? "shake border-red-500 focus:ring-red-500/30"
+      : "border-gray-300 focus:border-green-150 focus:ring-green-150/30"
+  }`;
+
+// Persistent label notched into the top border; tints green while its field is focused.
+// Kept static (not animated from center) so text, <select>, and the native date input all match —
+// a date input always shows its own dd/mm/yyyy hint and can't animate from a centered position.
+const floatLabel =
+  "pointer-events-none absolute left-2.5 top-2 z-10 origin-left -translate-y-4 scale-75 bg-white px-1 text-sm text-gray-500 transition-colors peer-focus:text-green-150";
+
+interface FloatingInputProps {
+  id: string;
+  name: string;
+  type: string;
+  label: string;
+  value: string;
+  onChange: React.ChangeEventHandler<HTMLInputElement>;
+  invalid: boolean;
+  autoComplete?: string;
+  rightSlot?: React.ReactNode;
+}
+
+const FloatingInput = ({
+  id,
+  name,
+  type,
+  label,
+  value,
+  onChange,
+  invalid,
+  autoComplete,
+  rightSlot,
+}: FloatingInputProps) => (
+  <div className="relative">
+    <input
+      id={id}
+      name={name}
+      type={type}
+      value={value}
+      onChange={onChange}
+      autoComplete={autoComplete}
+      className={`${fieldClass(invalid)}${rightSlot ? " pr-11" : ""}`}
+    />
+    <label htmlFor={id} className={floatLabel}>
+      {label}
+    </label>
+    {rightSlot}
+  </div>
+);
+
 const AuthForm: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(true);
   const [formData, setFormData] = useState<FormData>(initialFormData);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showMeter, setShowMeter] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [invalidFields, setInvalidFields] = useState<string[]>([]);
 
   const [signup, { isLoading: isSignupLoading }] = useSingupMutation();
@@ -51,6 +102,7 @@ const AuthForm: React.FC = () => {
     setIsSignUp(!isSignUp);
     setFormData(initialFormData);
     setInvalidFields([]);
+    setShowMeter(false);
   };
 
   const handleInputChange = (
@@ -61,7 +113,7 @@ const AuthForm: React.FC = () => {
     setInvalidFields((prev) => prev.filter((field) => field !== name));
 
     if (name === "password") {
-      setShowPassword(value.length > 0);
+      setShowMeter(value.length > 0);
     }
   };
 
@@ -136,16 +188,30 @@ const AuthForm: React.FC = () => {
   };
 
   const googleLoginHandler = async () => {
-    if (!validateForm(true)) {
-      toast.error("Please fill in required fields (Gender and Date of Birth)");
-      return;
-    }
-
     try {
       const provider = new GoogleAuthProvider();
       const { user } = await signInWithPopup(auth, provider);
 
-      const response = await signup({
+      // Returning users: the Firebase uid is their stored password, so try a normal sign-in first.
+      try {
+        const res = await signin({
+          email: user.email!,
+          password: user.uid,
+        }).unwrap();
+        toast.success(res.message);
+        navigate("/");
+        return;
+      } catch {
+        // No matching account — registration is required, and that needs gender + date of birth.
+        if (!isSignUp || !validateForm(true)) {
+          toast.error(
+            "No account found for that Google email. Switch to Sign Up and add your details to continue."
+          );
+          return;
+        }
+      }
+
+      const res = await signup({
         name: user.displayName!,
         email: user.email!,
         password: user.uid,
@@ -156,20 +222,20 @@ const AuthForm: React.FC = () => {
         _id: user.uid,
       }).unwrap();
 
-      toast.success(response.message);
+      toast.success(res.message);
       navigate("/");
       setFormData(initialFormData);
     } catch (error) {
       const err = error as FetchBaseQueryError;
       const message = (err.data as MessageResponse)?.message;
-      toast.error(message || "Google Sign Up Failed");
+      toast.error(message || "Google authentication failed");
     }
   };
 
   const isLoading = isSignUp ? isSignupLoading : isSigninLoading;
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen pt-16">
       <style>
         {`
           @keyframes shake {
@@ -182,15 +248,21 @@ const AuthForm: React.FC = () => {
           }
         `}
       </style>
-      <div className="flex-1 flex flex-col justify-center px-4 py-10 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
-        <div className="mx-auto mt-5 w-full max-w-sm lg:w-96">
-          <div className="flex justify-between">
-            <button className="rounded-full border-2 py-1 px-2 font-semibold">
-              <Link to="/">←</Link>
-            </button>
-            <p className="mt-2 text-sm text-gray-600">
+
+      <div className="flex flex-1 flex-col justify-center px-6 py-12 sm:px-12 lg:flex-none lg:px-20 xl:px-24">
+        <div className="mx-auto w-full max-w-sm lg:w-96">
+          <div className="flex items-center justify-between">
+            <Link
+              to="/"
+              aria-label="Back to home"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+            >
+              <HiArrowLeft className="h-4 w-4" />
+            </Link>
+            <p className="text-sm text-gray-600">
               {isSignUp ? "Already a member? " : "Don't have an account? "}
               <button
+                type="button"
                 onClick={toggleAuthMode}
                 className="font-medium text-green-150 hover:text-green-150/80"
               >
@@ -200,154 +272,158 @@ const AuthForm: React.FC = () => {
           </div>
 
           <div className="mt-10">
-            <h2 className="text-3xl font-bold text-gray-900">
-              {isSignUp ? "Sign Up" : "Sign In"}
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+              {isSignUp ? "Create your account" : "Welcome back"}
             </h2>
             <p className="mt-2 text-sm text-gray-600">
-              {isSignUp ? "Create your free account " : "Welcome Back !"}
+              {isSignUp
+                ? "Start shopping in under a minute."
+                : "Sign in to pick up where you left off."}
             </p>
           </div>
 
-          <div className="mt-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {isSignUp && (
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            {isSignUp && (
+              <FloatingInput
+                id="name"
+                name="name"
+                type="text"
+                label="Full name"
+                autoComplete="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                invalid={invalidFields.includes("name")}
+              />
+            )}
+
+            <FloatingInput
+              id="email"
+              name="email"
+              type="email"
+              label="Email"
+              autoComplete="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              invalid={invalidFields.includes("email")}
+            />
+
+            {isSignUp && (
+              <div className="grid grid-cols-2 gap-4">
                 <div className="relative">
-                  <HiOutlineUser className="absolute top-3 left-3 text-gray-400" />
-                  <Input
-                    id="name"
-                    name="name"
-                    type="text"
-                    placeholder="Daniel Ahmadi"
-                    required
-                    value={formData.name}
+                  <select
+                    id="gender"
+                    name="gender"
+                    value={formData.gender}
                     onChange={handleInputChange}
-                    className={`pl-10 appearance-none block w-full border-b border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm ${
-                      invalidFields.includes("name")
-                        ? "shake border-red-500"
-                        : ""
-                    }`}
-                  />
-                </div>
-              )}
-
-              <div className="relative">
-                <HiOutlineMail className="absolute top-3 left-3 text-gray-400" />
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="Danielahmadi@gmail.com"
-                  required
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className={`pl-10 appearance-none block w-full border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm ${
-                    invalidFields.includes("email")
-                      ? "shake border-red-500"
-                      : ""
-                  }`}
-                />
-              </div>
-
-              {isSignUp && (
-                <>
-                  <div className="relative">
-                    <BsGenderAmbiguous className="absolute top-3 left-3 text-gray-400" />
-                    <select
-                      name="gender"
-                      value={formData.gender}
-                      onChange={handleInputChange}
-                      required
-                      className={`w-full pl-10 appearance-none block border py-2 border-gray-300 rounded-md text-gray-500 shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm ${
-                        invalidFields.includes("gender")
-                          ? "shake border-red-500"
-                          : ""
-                      }`}
-                    >
-                      <option value="">Select Gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                    </select>
-                  </div>
-                  <div className="relative">
-                    <CiCalendarDate className="absolute top-3 left-3 text-gray-500" />
-                    <Input
-                      name="dateOfBirth"
-                      type="date"
-                      required
-                      value={formData.dateOfBirth}
-                      onChange={handleInputChange}
-                      className={`pl-10 appearance-none block w-full border border-gray-300 rounded-md shadow-sm text-gray-500 focus:outline-none sm:text-sm ${
-                        invalidFields.includes("dateOfBirth")
-                          ? "shake border-red-500"
-                          : ""
-                      }`}
-                    />
-                  </div>
-                </>
-              )}
-
-              <div className="relative">
-                <HiOutlineLockClosed className="absolute top-3 left-3 text-gray-400" />
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="Password"
-                  required
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className={`pl-10 appearance-none block w-full border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm ${
-                    invalidFields.includes("password")
-                      ? "shake border-red-500"
-                      : ""
-                  }`}
-                />
-                {isSignUp && showPassword && (
-                  <PasswordStrengthMeter password={formData.password} />
-                )}
-              </div>
-
-              <div className="mt-6 gap-2 flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex w-full justify-center border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-150 hover:bg-green-150/90"
-                >
-                  {isLoading ? (
-                    <InputLoader />
-                  ) : isSignUp ? (
-                    "Sign Up"
-                  ) : (
-                    "Sign In"
-                  )}
-                </Button>
-
-                <div className="relative flex justify-center text-sm">
-                  <span className="mt-2 text-gray-500">Or</span>
-                </div>
-
-                <div className="flex space-x-2">
-            
-                  <Button
-                    type="button"
-                    onClick={googleLoginHandler}
-                    disabled={isLoading}
-                    variant="outline"
-                    className="inline-flex justify-center items-center w-14 h-14 border border-gray-300 rounded-full shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                    required
+                    className={`${fieldClass(
+                      invalidFields.includes("gender")
+                    )} ${formData.gender ? "text-gray-900" : "text-gray-400"}`}
                   >
-                    <FaGoogle className="h-6 w-6 text-red-500" />
-                  </Button>
+                    <option value="" disabled hidden></option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
+                  <label htmlFor="gender" className={floatLabel}>
+                    Gender
+                  </label>
+                </div>
+
+                <div className="relative">
+                  <input
+                    id="dateOfBirth"
+                    name="dateOfBirth"
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={handleInputChange}
+                    required
+                    className={`${fieldClass(
+                      invalidFields.includes("dateOfBirth")
+                    )} text-gray-600`}
+                  />
+                  <label htmlFor="dateOfBirth" className={floatLabel}>
+                    Date of birth
+                  </label>
                 </div>
               </div>
-            </form>
-          </div>
+            )}
+
+            <div>
+              <FloatingInput
+                id="password"
+                name="password"
+                type={passwordVisible ? "text" : "password"}
+                label="Password"
+                autoComplete={isSignUp ? "new-password" : "current-password"}
+                value={formData.password}
+                onChange={handleInputChange}
+                invalid={invalidFields.includes("password")}
+                rightSlot={
+                  <button
+                    type="button"
+                    onClick={() => setPasswordVisible((v) => !v)}
+                    aria-label={
+                      passwordVisible ? "Hide password" : "Show password"
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {passwordVisible ? (
+                      <HiOutlineEyeOff className="h-5 w-5" />
+                    ) : (
+                      <HiOutlineEye className="h-5 w-5" />
+                    )}
+                  </button>
+                }
+              />
+              {isSignUp && showMeter && (
+                <PasswordStrengthMeter password={formData.password} />
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="h-11 w-full rounded-lg bg-green-150 text-sm font-medium text-white hover:bg-green-150/90"
+            >
+              {isLoading ? (
+                <InputLoader />
+              ) : isSignUp ? (
+                "Create account"
+              ) : (
+                "Sign in"
+              )}
+            </Button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-white px-3 uppercase tracking-wider text-gray-400">
+                  or
+                </span>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              onClick={googleLoginHandler}
+              disabled={isLoading}
+              variant="outline"
+              className="h-11 w-full gap-3 rounded-lg border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              <FaGoogle className="h-4 w-4 text-red-500" />
+              Continue with Google
+            </Button>
+          </form>
         </div>
       </div>
-      <div className="hidden lg:block relative w-0 flex-1">
+
+      <div className="relative hidden w-0 flex-1 lg:block">
         <img
-          className="h-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover"
           src={loginImage}
-          alt="login image"
+          alt="Featured products"
         />
       </div>
     </div>
