@@ -35,7 +35,7 @@ const initialFormData: FormData = {
 };
 
 const fieldClass = (invalid: boolean) =>
-  `peer block w-full rounded-lg border bg-white px-3 pb-2.5 pt-4 text-sm text-gray-900 shadow-sm transition-colors focus:outline-none focus:ring-2 ${
+  `peer block w-full rounded-md border bg-white px-3 pb-2.5 pt-4 text-sm text-gray-900 shadow-sm transition-colors focus:outline-none focus:ring-2 ${
     invalid
       ? "shake border-red-500 focus:ring-red-500/30"
       : "border-gray-300 focus:border-green-150 focus:ring-green-150/30"
@@ -383,7 +383,7 @@ const AuthForm: React.FC = () => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="h-11 w-full rounded-lg bg-green-150 text-sm font-medium text-white hover:bg-green-150/90"
+              className="h-11 w-full rounded-md bg-green-150 text-sm font-medium text-white hover:bg-green-150/90"
             >
               {isLoading ? (
                 <InputLoader />
@@ -410,7 +410,7 @@ const AuthForm: React.FC = () => {
               onClick={googleLoginHandler}
               disabled={isLoading}
               variant="outline"
-              className="h-11 w-full gap-3 rounded-lg border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="h-11 w-full gap-3 rounded-md border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               <FaGoogle className="h-4 w-4 text-red-500" />
               Continue with Google
