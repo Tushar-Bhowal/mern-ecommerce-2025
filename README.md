@@ -1,16 +1,6 @@
-# MERN E-Commerce App
+# NexCartia
 
-> Evidence (Step 0 — grounded in file contents read)
->
-> - **Project type:** Full-stack **web app** = a REST **API** (backend) + a **SPA web app** (frontend), in one repo, two independent packages.
-> - **Languages / frameworks / proof:**
->   - Backend — TypeScript on **Express 5** + **Mongoose 9** (ESM). Proven by `ecommerce-backend/package.json` (`express`, `mongoose`, `"type": "module"`) and `ecommerce-backend/src/app.ts` (`express()`, route mounting, `Stripe`, `cloudinary`, `NodeCache`).
->   - Frontend — TypeScript on **React 19** + **Vite 8**, **Redux Toolkit + RTK Query**, **react-router 7**. Proven by `ecommerce-frontend/package.json` and `ecommerce-frontend/src/App.tsx` / `src/redux/store.ts`.
-> - **Entry points & what they call:**
->   - Backend entry: `ecommerce-backend/src/app.ts` → calls `connectDB()` (`utils/features.ts`), configures `cloudinary`/`stripe`/`myCache`, mounts `user|product|order|payment|dashboard` routers under `/api/v1`, ends with a 404 middleware + `errorMiddleware`.
->   - Frontend entry: `ecommerce-frontend/src/main.tsx` → `src/App.tsx`, which runs `useCheckAuthQuery()`, hydrates the user into `userReducer`, and declares all routes (public / logged-in / admin) via `react-router`.
-
-A full-stack online store with a customer storefront and an admin dashboard. The repository is split into two independently installed/run TypeScript packages — an Express REST API and a React SPA — that communicate only over HTTP through `VITE_SERVER` + `/api/v1/<domain>/`.
+**NexCartia** is a full-stack e-commerce store — a customer-facing storefront plus an admin dashboard. Shoppers browse a cached product catalog, manage a cart, and check out with Stripe; admins manage inventory (product images via Cloudinary), coupons, orders, and sales analytics. The repository is split into two independently installed/run TypeScript packages — an Express 5 REST API and a React 19 SPA — that communicate only over HTTP through `VITE_SERVER` + `/api/v1/<domain>/`.
 
 ![NexCartia login page](ecommerce-frontend/public/login-preview.png)
 
@@ -220,6 +210,8 @@ curl -X POST "$SERVER/api/v1/payment/create?id=$USER_ID" \
 curl -X PUT "$SERVER/api/v1/order/<orderId>?id=$ADMIN_ID"
 # → { "success": true, "message": "Order Processed Successfully" }   (Processing → Shipped → Delivered)
 ```
+
+> **Auth note:** admin and user-scoped endpoints currently identify the caller by an `?id=<userId>` query parameter (`adminOnly` in `middlewares/auth.ts` looks the id up and checks `role`). This is a known limitation, **not** a recommended pattern — a query-string id is not a credential and leaks through server logs, browser history, and `Referer` headers. The signed JWT cookie (`verifyToken`) is the intended mechanism; these examples document current behavior only.
 
 ## Configuration
 
